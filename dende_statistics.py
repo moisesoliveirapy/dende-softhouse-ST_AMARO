@@ -21,20 +21,18 @@ class Statistics:
         self.dataset = dataset
 
     def mean(self, column):
-        """
-        Calcula a média aritmética de uma coluna.
+            def mean(self, column):
+        coluna = self.dataset[column]
+        tamanho_coluna = len(coluna)
+        soma_coluna = 0
+        media = float
 
-        Parâmetros
-        ----------
-        column : str
-            O nome da coluna (chave do dicionário do dataset).
+        for item in coluna:
+            soma_coluna = soma_coluna + item
+        
+        media = soma_coluna/tamanho_coluna
 
-        Retorno
-        -------
-        float
-            A média dos valores na coluna.
-        """
-        pass
+        return media
 
     def median(self, column):
         """
@@ -139,60 +137,114 @@ class Statistics:
         pass
 
     def absolute_frequency(self, column):
-        """
-        Calcula a frequência absoluta de cada item em uma coluna.
+        lista_de_itens = []
+        coluna = self.dataset[column]
+        dicionario_frequencia_absoluta = {}
 
-        Parâmetros
-        ----------
-        column : str
-            O nome da coluna (chave do dicionário do dataset).
+        for valor in coluna:
+            if valor not in lista_de_itens:
+                lista_de_itens.append(valor)
+                lista_de_itens.append(1)
+                continue
+            
+            indice_incrementar = int(lista_de_itens.index(valor))
 
-        Retorno
-        -------
-        dict
-            Um dicionário onde as chaves são os itens e os valores são
-            suas contagens (frequência absoluta).
-        """
-        pass
+            lista_de_itens[indice_incrementar + 1] = lista_de_itens[indice_incrementar + 1] + 1
+
+        for item in range(0, len(lista_de_itens), 2):
+            chave = lista_de_itens[item]
+            valor = lista_de_itens[item+1]
+            dicionario_frequencia_absoluta[chave] = valor
+
+        dicionario_frequencia_absoluta = {lista_de_itens[i]: lista_de_itens[i+1] for i in range(0, len(lista_de_itens), 2)}
+
+        return dicionario_frequencia_absoluta
 
     def relative_frequency(self, column):
-        """
-        Calcula a frequência relativa de cada item em uma coluna.
+        lista_de_itens = []
+        coluna = self.dataset[column]
+        total_frequencia_absoluta = 0
+        dicionario_frequencia_relativa = {}
 
-        Parâmetros
-        ----------
-        column : str
-            O nome da coluna (chave do dicionário do dataset).
+        for valor in coluna:
+            if valor not in lista_de_itens:
+                lista_de_itens.append(valor)
+                lista_de_itens.append(1)
+                continue
+            
+            indice_incrementar = int(lista_de_itens.index(valor))
 
-        Retorno
-        -------
-        dict
-            Um dicionário onde as chaves são os itens e os valores são
-            suas proporções (frequência relativa).
-        """
-        pass
+            lista_de_itens[indice_incrementar + 1] = lista_de_itens[indice_incrementar + 1] + 1
+
+        contador = 0
+
+        for frequencia_absoluta in lista_de_itens:
+            if contador % 2 == 0:
+                contador = contador + 1
+                continue
+
+            total_frequencia_absoluta = total_frequencia_absoluta + frequencia_absoluta
+            contador = contador + 1
+
+        for item in range(0, len(lista_de_itens), 2):
+            chave = lista_de_itens[item]
+            valor = lista_de_itens[item+1]
+
+
+
+            dicionario_frequencia_relativa[chave] = valor/total_frequencia_absoluta
+
+        dicionario_frequencia_absoluta = {lista_de_itens[i]: lista_de_itens[i+1] for i in range(0, len(lista_de_itens), 2)}
+
+        return dicionario_frequencia_relativa
 
     def cumulative_frequency(self, column, frequency_method='absolute'):
-        """
-        Calcula a frequência acumulada (absoluta ou relativa) de uma coluna.
+                if (frequency_metody).lower() not in ('absolute', 'relative'):
+            return 'Insira uma frequência válida!'
 
-        A frequência é calculada sobre os itens ordenados.
+        lista_de_itens = []
+        coluna = self.dataset[column]
+        dicionario_frequencia_absoluta = {}
+        valor_acumulativo = 0
+        valor_total = 0
+        
 
-        Parâmetros
-        ----------
-        column : str
-            O nome da coluna (chave do dicionário do dataset).
-        frequency_method : str, opcional
-            O método a ser usado: 'absolute' para contagem acumulada ou
-            'relative' para proporção acumulada (padrão é 'absolute').
+        for valor in coluna:
+            if valor not in lista_de_itens:
+                lista_de_itens.append(valor)
+                lista_de_itens.append(1)
+                continue
+            
+            indice_incrementar = int(lista_de_itens.index(valor))
+            
 
-        Retorno
-        -------
-        dict
-            Um dicionário ordenado com os itens como chaves e suas
-            frequências acumuladas como valores.
-        """
-        pass
+            lista_de_itens[indice_incrementar + 1] = lista_de_itens[indice_incrementar + 1] + 1
+
+        contador = 0
+
+        for valor in lista_de_itens:
+            if contador % 2 == 0:
+                contador = contador + 1
+                continue
+
+            lista_de_itens[contador] = lista_de_itens[contador] + valor_acumulativo
+            valor_acumulativo = lista_de_itens[contador]
+
+            contador = contador + 1
+
+        valor_total = lista_de_itens[-1]
+
+        if frequency_metody.lower().strip() == 'absolute':
+            return lista_de_itens
+        elif frequency_metody.lower().strip() == 'relative':
+
+            for indice in range(1, len(lista_de_itens), 2):
+                lista_de_itens[indice] = lista_de_itens[indice] / valor_total
+        else:
+            return('Insira uma frequência válida!')
+
+        return lista_de_itens
+
 
     def conditional_probability(self, column, value1, value2):
         """
