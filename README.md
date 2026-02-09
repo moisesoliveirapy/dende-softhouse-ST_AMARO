@@ -57,8 +57,8 @@ Todos os métodos devem ser implementados **sem o uso de bibliotecas estatístic
 
 Bruno Sampaio Silva
 
-[Nome do Integrante 2]
+Levi Falcão de Queiroz
 
-[Nome do Integrante 3]
+Moisés de Souza Oliveira
 
 [Nome do Integrante 4]
