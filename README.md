@@ -55,7 +55,7 @@ Todos os métodos devem ser implementados **sem o uso de bibliotecas estatístic
 
 ### Integrantes da Equipe
 
-[Nome do Integrante 1]
+Bruno Sampaio Silva
 
 [Nome do Integrante 2]
 
