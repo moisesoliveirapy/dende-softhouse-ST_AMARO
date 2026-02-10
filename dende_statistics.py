@@ -198,7 +198,7 @@ class Statistics:
         return dicionario_frequencia_relativa
 
     def cumulative_frequency(self, column, frequency_method='absolute'):
-        if (frequency_metod).lower() not in ('absolute', 'relative'):
+        if (frequency_method).lower() not in ('absolute', 'relative'):
             return 'Insira uma frequência válida!'
 
         lista_de_itens = []
@@ -233,9 +233,9 @@ class Statistics:
 
         valor_total = lista_de_itens[-1]
 
-        if frequency_metod.lower().strip() == 'absolute':
+        if frequency_method.lower().strip() == 'absolute':
             return lista_de_itens
-        elif frequency_metod.lower().strip() == 'relative':
+        elif frequency_method.lower().strip() == 'relative':
 
             for indice in range(1, len(lista_de_itens), 2):
                 lista_de_itens[indice] = lista_de_itens[indice] / valor_total
@@ -304,4 +304,3 @@ class Statistics:
             e os valores são as contagens.
         """
         pass
-
