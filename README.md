@@ -50,7 +50,7 @@ Todos os métodos devem ser implementados **sem o uso de bibliotecas estatístic
 ## 🧑‍🤝‍🧑 Identificação da Equipe  
 > ⚠️ **Esta seção deve ser obrigatoriamente preenchida pelos estudantes**
 
-### Nome do Grupo: [SUBSTITUA AQUI PELO NOME DO GRUPO]
+### Nome do Grupo: [ST.AMARO]
 
 
 ### Integrantes da Equipe

@@ -284,7 +284,7 @@ class Statistics:
         dict
             Um dicionário com os quartis Q1, Q2 (mediana) e Q3.
         """
-        pass
+
 
     def histogram(self, column, bins):
         """
@@ -303,4 +303,60 @@ class Statistics:
             Um dicionário onde as chaves são os intervalos (tuplas)
             e os valores são as contagens.
         """
-        pass
+
+        # Validação da coluna
+        if column not in self.dataset:
+            raise ValueError(f"Coluna '{column}' não encontrada no dataset.")
+
+        valores = self.dataset[column]
+        print(valores)
+        # Validação de bins
+        if bins <= 0:
+            raise ValueError("O número de bins deve ser maior que zero.")
+
+        menor_valor = min(valores)
+        maior_valor = max(valores)
+        print(bins)
+        print(menor_valor)
+        print(maior_valor)
+
+        # Caso todos os valores sejam iguais
+        if menor_valor == maior_valor:
+            return {"Se os valores forem iguais: "(menor_valor, maior_valor): len(valores)}
+
+        tamanho_bin = (maior_valor - menor_valor) / bins
+        print(f"tamanho bin: {tamanho_bin}")
+        # Criando os limites
+        limites = []
+        for i in range(bins + 1):
+            print(i)
+            ponto = menor_valor + (i * tamanho_bin)
+            limites.append(ponto)
+            print(limites)
+
+        # Criando estrutura do histograma
+        histograma = {}
+        for i in range(bins):
+            intervalo = (limites[i], limites[i + 1])
+            print(limites[i])
+            print(limites[i + 1])
+            print(intervalo)
+            histograma[intervalo] = 0
+
+        # Contagem dos valores
+        for valor in valores:
+            """ print(valor) """
+            indice = int((valor - menor_valor) / tamanho_bin)
+            
+            """ 50,30,70,20,80,30,25,75,20,65 """
+            # Ajuste para incluir o valor máximo no último intervalo
+            if indice == bins:
+                indice -= 1
+
+            intervalo = (limites[indice], limites[indice + 1])
+            print(f'intervalo v2{intervalo}')
+            histograma[intervalo] += 1
+            print(f'histograma v2: {histograma}')
+
+        return histograma
+    pass
