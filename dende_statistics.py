@@ -70,54 +70,45 @@ class Statistics:
         pass
 
     def variance(self, column):
-        """
-        Calcula a variância populacional de uma coluna.
+       coluna = self.dataset[column]
+       n = len(coluna)
 
-        Parâmetros
-        ----------
-        column : str
-            O nome da coluna (chave do dicionário do dataset).
+       #validacao
+       if not isinstance(coluna[0], (int, float)):
+           raise TypeError("Variação so funciona com numeros")
+       
+       media = self.mean(column)
+       soma = 0
 
-        Retorno
-        -------
-        float
-            A variância dos valores na coluna.
-        """
-        pass
+       for valor in coluna:
+           soma += (valor - media) ** 2
+
+       variancia = soma / n
+       return variancia
 
     def stdev(self, column):
-        """
-        Calcula o desvio padrão populacional de uma coluna.
-
-        Parâmetros
-        ----------
-        column : str
-            O nome da coluna (chave do dicionário do dataset).
-
-        Retorno
-        -------
-        float
-            O desvio padrão dos valores na coluna.
-        """
-        pass
+        variancia = self.variance[column]
+        return variancia ** 0.5
 
     def covariance(self, column_a, column_b):
-        """
-        Calcula a covariância entre duas colunas.
+      coluna_a = self.dataset[column_a]
+      coluna_b = self.dataset[column_b]
 
-        Parâmetros
-        ----------
-        column_a : str
-            O nome da primeira coluna (X).
-        column_b : str
-            O nome da segunda coluna (Y).
+      #validação
+      if len(column_a) != len(column_b):
+          raise TypeError("As colunas devem ter o mesmo tamanho")
+      if not isinstance(coluna_a[0], (int, float)) or not(coluna_b[0], (int, float)):
+          raise TypeError("Variação so funciona com numeros")
+      
+      media_a = self.mean(column_a)
+      media_b = self.mean(column_b)
 
-        Retorno
-        -------
-        float
-            O valor da covariância entre as duas colunas.
-        """
-        pass
+      soma = 0
+
+      for i in range(len(coluna_a)):
+          soma += (coluna_a[i] - media_a) * (coluna_b[i] - media_b)
+
+      return soma / len(coluna_a)
 
     def itemset(self, column):
         """
