@@ -284,9 +284,9 @@ class Statistics:
         dict
             Um dicionário com os quartis Q1, Q2 (mediana) e Q3.
         """
+        pass
 
-
-    def histogram(self, column, bins):
+    def histogram(self, column, bins): 
         """
         Gera um histograma baseado em buckets (intervalos).
 
