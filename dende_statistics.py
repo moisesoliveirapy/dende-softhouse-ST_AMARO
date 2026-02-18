@@ -19,105 +19,148 @@ class Statistics:
             colunas e os valores são as listas de dados correspondentes.
         """
         self.dataset = dataset
-
-    def mean(self, column):
-        coluna = self.dataset[column]
-        tamanho_coluna = len(coluna)
-        soma_coluna = 0
-        media = float
-
-        for item in coluna:
-            soma_coluna = soma_coluna + item
         
-        media = soma_coluna/tamanho_coluna
+        
+    def mean(self, column):
+        """
+        Calcula a média aritmética de uma coluna.
+        """
+        if column not in self.dataset:
+            raise ValueError(f"Coluna '{column}' não encontrada no dataset.")
 
-        return media
+        valores = self.dataset[column]
+
+        if len(valores) == 0:
+            raise ValueError(f"Coluna '{column}' está vazia.")
+
+        for v in valores:
+            if not isinstance(v, (int, float)):
+                raise TypeError("Média só funciona com valores numéricos (int ou float).")
+
+        soma = 0
+        for v in valores:
+            soma += v
+
+        return soma / len(valores)
+
+
+
 
     def median(self, column):
         """
         Calcula a mediana de uma coluna.
-
-        A mediana é o valor central de um conjunto de dados ordenado.
-
-        Parâmetros
-        ----------
-        column : str
-            O nome da coluna (chave do dicionário do dataset).
-
-        Retorno
-        -------
-        float
-            O valor da mediana da coluna.
         """
-        pass
+        # validação: coluna existe
+        if column not in self.dataset:
+            raise ValueError(f"Coluna '{column}' não encontrada no dataset.")
+
+        valores = self.dataset[column]
+
+        # validação: coluna não vazia
+        if len(valores) == 0:
+            raise ValueError(f"Coluna '{column}' está vazia.")
+
+        # validação: somente números
+        for v in valores:
+            if not isinstance(v, (int, float)):
+                raise TypeError("Mediana só funciona com valores numéricos (int ou float).")
+
+        # ordena uma cópia para não alterar o dataset original
+        ordenados = list(valores)
+
+        # ordenação (bubble sort simples; sem usar sorted())
+        n = len(ordenados)
+        for i in range(n):
+            for j in range(0, n - i - 1):
+                if ordenados[j] > ordenados[j + 1]:
+                    ordenados[j], ordenados[j + 1] = ordenados[j + 1], ordenados[j]
+
+        meio = n // 2
+
+        # se n for ímpar, retorna o do meio
+        if n % 2 != 0:
+            return ordenados[meio]
+
+        # se n for par, média dos dois centrais
+        return (ordenados[meio - 1] + ordenados[meio]) / 2
 
     def mode(self, column):
         """
         Encontra a moda (ou modas) de uma coluna.
-
-        A moda é o valor que aparece com mais frequência no conjunto de dados.
-
-        Parâmetros
-        ----------
-        column : str
-            O nome da coluna (chave do dicionário do dataset).
-
-        Retorno
-        -------
-        list
-            Uma lista contendo o(s) valor(es) da moda.
+        Retorna uma lista com o(s) valor(es) mais frequente(s).
         """
-        pass
+        # validação: coluna existe
+        if column not in self.dataset:
+            raise ValueError(f"Coluna '{column}' não encontrada no dataset.")
+
+        valores = self.dataset[column]
+
+        if len(valores) == 0:
+            return []
+
+        # conta frequências (sem Counter)
+        freq = {}
+        for v in valores:
+            if v in freq:
+                freq[v] += 1
+            else:
+                freq[v] = 1
+
+        # encontra a maior frequência
+        maior = 0
+        for k in freq:
+            if freq[k] > maior:
+                maior = freq[k]
+
+        # junta todas as modas (empates)
+        modas = []
+        for k in freq:
+            if freq[k] == maior:
+                modas.append(k)
+
+        return modas
+
 
     def variance(self, column):
-        """
-        Calcula a variância populacional de uma coluna.
+       coluna = self.dataset[column]
+       n = len(coluna)
 
-        Parâmetros
-        ----------
-        column : str
-            O nome da coluna (chave do dicionário do dataset).
+       #validacao
+       if not isinstance(coluna[0], (int, float)):
+           raise TypeError("Variação so funciona com numeros")
+       
+       media = self.mean(column)
+       soma = 0
 
-        Retorno
-        -------
-        float
-            A variância dos valores na coluna.
-        """
-        pass
+       for valor in coluna:
+           soma += (valor - media) ** 2
+
+       variancia = soma / n
+       return variancia
 
     def stdev(self, column):
-        """
-        Calcula o desvio padrão populacional de uma coluna.
-
-        Parâmetros
-        ----------
-        column : str
-            O nome da coluna (chave do dicionário do dataset).
-
-        Retorno
-        -------
-        float
-            O desvio padrão dos valores na coluna.
-        """
-        pass
+         variancia = self.variance(column)
+         return variancia ** 0.5
 
     def covariance(self, column_a, column_b):
-        """
-        Calcula a covariância entre duas colunas.
+      coluna_a = self.dataset[column_a]
+      coluna_b = self.dataset[column_b]
 
-        Parâmetros
-        ----------
-        column_a : str
-            O nome da primeira coluna (X).
-        column_b : str
-            O nome da segunda coluna (Y).
+      #validação
+      if len(column_a) != len(column_b):
+          raise TypeError("As colunas devem ter o mesmo tamanho")
+      if not isinstance(coluna_a[0], (int, float)) or not isinstance(coluna_b[0], (int, float)):
+          raise TypeError("Variação so funciona com numeros")
+      
+      media_a = self.mean(column_a)
+      media_b = self.mean(column_b)
 
-        Retorno
-        -------
-        float
-            O valor da covariância entre as duas colunas.
-        """
-        pass
+      soma = 0
+
+      for i in range(len(coluna_a)):
+          soma += (coluna_a[i] - media_a) * (coluna_b[i] - media_b)
+
+      return soma / len(coluna_a)
 
     def itemset(self, column):
         """
@@ -406,3 +449,7 @@ class Statistics:
 
         return histograma
     pass
+
+
+
+
