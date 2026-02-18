@@ -179,139 +179,72 @@ class Statistics:
         pass
 
     def absolute_frequency(self, column):
-        lista_de_itens = []
-        coluna = self.dataset[column]
-        dicionario_frequencia_absoluta = {}
+        column = self.dataset[column]
+        frequency = {}
 
-        for valor in coluna:
-            if valor not in lista_de_itens:
-                lista_de_itens.append(valor)
-                lista_de_itens.append(1)
-                continue
-            
-            indice_incrementar = int(lista_de_itens.index(valor))
+        for value in column:
+            if value in frequency:
+                frequency[value] += 1
+            else:
+                frequency[value] = 1
+                
+        return frequency
 
-            lista_de_itens[indice_incrementar + 1] = lista_de_itens[indice_incrementar + 1] + 1
-
-        for item in range(0, len(lista_de_itens), 2):
-            chave = lista_de_itens[item]
-            valor = lista_de_itens[item+1]
-            dicionario_frequencia_absoluta[chave] = valor
-
-        dicionario_frequencia_absoluta = {lista_de_itens[i]: lista_de_itens[i+1] for i in range(0, len(lista_de_itens), 2)}
-
-        return dicionario_frequencia_absoluta
 
     def relative_frequency(self, column):
-        lista_de_itens = []
-        coluna = self.dataset[column]
-        total_frequencia_absoluta = 0
-        dicionario_frequencia_relativa = {}
+        relative_frequency = self.absolute_frequency(column)
+        total = 0
 
-        for valor in coluna:
-            if valor not in lista_de_itens:
-                lista_de_itens.append(valor)
-                lista_de_itens.append(1)
-                continue
-            
-            indice_incrementar = int(lista_de_itens.index(valor))
+        for key in relative_frequency:
+            total = total + int(relative_frequency[key])
 
-            lista_de_itens[indice_incrementar + 1] = lista_de_itens[indice_incrementar + 1] + 1
+        for key in relative_frequency:
+            relative_frequency[key] = int(relative_frequency[key]) / total
 
-        contador = 0
+        return relative_frequency
 
-        for frequencia_absoluta in lista_de_itens:
-            if contador % 2 == 0:
-                contador = contador + 1
-                continue
-
-            total_frequencia_absoluta = total_frequencia_absoluta + frequencia_absoluta
-            contador = contador + 1
-
-        for item in range(0, len(lista_de_itens), 2):
-            chave = lista_de_itens[item]
-            valor = lista_de_itens[item+1]
-
-
-
-            dicionario_frequencia_relativa[chave] = valor/total_frequencia_absoluta
-
-        dicionario_frequencia_absoluta = {lista_de_itens[i]: lista_de_itens[i+1] for i in range(0, len(lista_de_itens), 2)}
-
-        return dicionario_frequencia_relativa
 
     def cumulative_frequency(self, column, frequency_method='absolute'):
-        if (frequency_method).lower() not in ('absolute', 'relative'):
-            return 'Insira uma frequência válida!'
-
-        lista_de_itens = []
-        coluna = self.dataset[column]
-        dicionario_frequencia_absoluta = {}
-        valor_acumulativo = 0
-        valor_total = 0
+        if frequency_method.lower().strip() not in ['absolute', 'relative']:
+            return 'Frequência Inválida'
+    
+        item_anterior = 0
         
-
-        for valor in coluna:
-            if valor not in lista_de_itens:
-                lista_de_itens.append(valor)
-                lista_de_itens.append(1)
-                continue
-            
-            indice_incrementar = int(lista_de_itens.index(valor))
-            
-
-            lista_de_itens[indice_incrementar + 1] = lista_de_itens[indice_incrementar + 1] + 1
-
-        contador = 0
-
-        for valor in lista_de_itens:
-            if contador % 2 == 0:
-                contador = contador + 1
-                continue
-
-            lista_de_itens[contador] = lista_de_itens[contador] + valor_acumulativo
-            valor_acumulativo = lista_de_itens[contador]
-
-            contador = contador + 1
-
-        valor_total = lista_de_itens[-1]
-
-        if frequency_method.lower().strip() == 'absolute':
-            return lista_de_itens
-        elif frequency_method.lower().strip() == 'relative':
-
-            for indice in range(1, len(lista_de_itens), 2):
-                lista_de_itens[indice] = lista_de_itens[indice] / valor_total
+        if frequency_method == 'absolute':
+            base_frequency = self.absolute_frequency(column)
         else:
-            return('Insira uma frequência válida!')
+            base_frequency = self.relative_frequency(column)
 
-        return lista_de_itens
+        base_frequency_sorted = ["baixa", "media", "alta"] if "baixa" in base_frequency and "media" in base_frequency else sorted(base_frequency.keys())
+
+        cumulative_frequency = {}
+
+        for key in base_frequency_sorted:
+            if key in base_frequency:
+                valor_atual = base_frequency[key] + item_anterior
+                cumulative_frequency[key] = valor_atual
+                item_anterior = valor_atual
+        
+        return cumulative_frequency
 
 
     def conditional_probability(self, column, value1, value2):
-        """
-        Calcula a probabilidade condicional P(X_i = value1 | X_{i-1} = value2).
+        column = self.dataset[column]
+        conditional_probability = 0
+        total = 0
+        conditione = 0
+        for i in range(0, len(column) - 1):
+            if column[i] == value2:
+                total += 1
+                if column[i+1] == value1:
+                    conditione += 1
+        
+        if total != 0:
+            conditional_probability = conditione / total
+        else:
+            return 0
 
-        Este método trata a coluna como uma sequência e calcula a probabilidade
-        de encontrar `value1` imediatamente após `value2`.
-
-        Fórmula: P(A|B) = Contagem de sequências (B, A) / Contagem total de B
-
-        Parâmetros
-        ----------
-        column : str
-            O nome da coluna (chave do dicionário do dataset).
-        value1 : any
-            O valor do evento consequente (A).
-        value2 : any
-            O valor do evento condicionante (B).
-
-        Retorno
-        -------
-        float
-            A probabilidade condicional, um valor entre 0 e 1.
-        """
-        pass
+        return conditional_probability
 
     def quartiles(self, column):
         """
