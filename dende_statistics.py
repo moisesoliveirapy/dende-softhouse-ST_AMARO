@@ -284,8 +284,53 @@ class Statistics:
         dict
             Um dicionário com os quartis Q1, Q2 (mediana) e Q3.
         """
-        pass
 
+        # Recebendo os valores do dataset
+        valores = sorted(self.dataset[column])
+        print(valores)
+        tamanho_valores = len(valores)
+        print(tamanho_valores)
+
+        # Caso a quantidade de valores for igual a zero
+        if tamanho_valores == 0:
+            return {"Q1": 0, "Q2": 0, "Q3": 0}
+
+        # Cálculo do Q2 (Mediana)
+        mediana = tamanho_valores // 2
+        if tamanho_valores % 2 == 0:
+            q2 = (valores[mediana - 1] + valores[mediana]) / 2
+            print(valores[mediana])
+            print(mediana)
+            print(q2)
+            # O fatiamento começa do início até o meio
+            primeira_metade = valores[:mediana]
+            # O fatiamento começa do meio até o final
+            segunda_metade  = valores[mediana:]
+        else:
+            q2 = valores[mediana]
+            # Para n ímpar, a mediana (Q2) é excluída de ambas as metades
+            primeira_metade = valores[:mediana]
+            segunda_metade  = valores[mediana + 1:]
+
+        # Cálculo do Q1 (Mediana da Metade Inferior)
+        tamanho_inferior = len(primeira_metade)
+        mediana_1 = tamanho_inferior // 2
+        if tamanho_inferior % 2 == 0:
+            q1 = (primeira_metade[mediana_1 - 1] + primeira_metade[mediana_1]) / 2
+        else:
+            q1 = (primeira_metade[mediana_1])
+
+        # Cálculo do Q3 (Mediana da Metade Superior
+        tamanho_superior = len(segunda_metade)
+        mediana_2 = tamanho_superior // 2
+        if tamanho_superior % 2 == 0:
+            q3 = (segunda_metade [mediana_2 - 1] + segunda_metade [mediana_2]) / 2
+        else:
+            q3 = (segunda_metade [mediana_2])
+
+        return {"Q1": q1, "Q2": q2, "Q3": q3}
+    
+     
     def histogram(self, column, bins): 
         """
         Gera um histograma baseado em buckets (intervalos).
@@ -322,7 +367,8 @@ class Statistics:
 
         # Caso todos os valores sejam iguais
         if menor_valor == maior_valor:
-            return {"Se os valores forem iguais: "(menor_valor, maior_valor): len(valores)}
+            return { f"Se os valores forem iguais: ({menor_valor}, {maior_valor})": len(valores)}
+
 
         tamanho_bin = (maior_valor - menor_valor) / bins
         print(f"tamanho bin: {tamanho_bin}")
