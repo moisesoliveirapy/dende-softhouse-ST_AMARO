@@ -4,17 +4,17 @@ class Statistics:
             raise TypeError("O dataset deve ser um dicionário.")
         
         self.dataset = dataset 
-        
+        self.ordinal_scales = {}
         colunas = list(self.dataset.keys())
 
         if not colunas:
             return
         
-        primeira_chave = colunas[0]
-        if not isinstance(self.dataset[primeira_chave], list):
-            raise ValueError(f"A coluna '{primeira_chave}' deve conter uma lista.")
-
-        tamanho_esperado = len(self.dataset[primeira_chave])
+        primeira_coluna = colunas[0]
+        if not isinstance(self.dataset[primeira_coluna], list):
+            raise ValueError(f"A coluna '{primeira_coluna}' deve conter uma lista.")
+        
+        tamanho_esperado = len(self.dataset[primeira_coluna])
 
         for rotulo in colunas:
             lista_dados = self.dataset[rotulo]
@@ -26,12 +26,26 @@ class Statistics:
                 raise ValueError(f"Inconsistência: A coluna '{rotulo}' tem tamanho diferente.")
 
             if tamanho_esperado > 0:
-                tipo_da_coluna = type(lista_dados[0])
+                primeiro_elemento = lista_dados[0]
+                
+                if isinstance(primeiro_elemento, (int, float)):
+                    tipo_referencia = (int, float)
+                else:
+                    tipo_referencia = type(primeiro_elemento)
+
                 for elemento in lista_dados:
-                    if type(elemento) is not tipo_da_coluna:
-                        raise ValueError(f"Tipo misto na coluna '{rotulo}'.")
+                    if isinstance(tipo_referencia, tuple):
+                        if not isinstance(elemento, tipo_referencia):
+                            raise ValueError(f"Tipo misto na coluna '{rotulo}': esperado numérico.")
+                    else:
+                        if type(elemento) is not tipo_referencia:
+                            raise ValueError(f"Tipo misto na coluna '{rotulo}': esperado {tipo_referencia}.")
         
         
+
+    def set_ordinal_scale(self, column, scale_list):
+        self.ordinal_scales[column] = scale_list
+
     def mean(self, column):
         if column not in self.dataset:
             return None
@@ -55,9 +69,6 @@ class Statistics:
         mean = soma_total / quantidade
         return mean
 
-
-
-
     def median(self, column):
         if column not in self.dataset:
             return None
@@ -80,20 +91,14 @@ class Statistics:
         return (sorted_column[middle_position - 1] + sorted_column[middle_position]) / 2
 
     def mode(self, column):
-        """
-        Encontra a moda (ou modas) de uma coluna.
-        Retorna uma lista com o(s) valor(es) mais frequente(s).
-        """
-        # validação: coluna existe
         if column not in self.dataset:
-            raise ValueError(f"Coluna '{column}' não encontrada no dataset.")
-
+            return None
+        
         valores = self.dataset[column]
 
         if len(valores) == 0:
             return []
 
-        # conta frequências (sem Counter)
         freq = {}
         for v in valores:
             if v in freq:
@@ -101,13 +106,11 @@ class Statistics:
             else:
                 freq[v] = 1
 
-        # encontra a maior frequência
         maior = 0
         for k in freq:
             if freq[k] > maior:
                 maior = freq[k]
 
-        # junta todas as modas (empates)
         modas = []
         for k in freq:
             if freq[k] == maior:
@@ -117,67 +120,82 @@ class Statistics:
 
 
     def variance(self, column):
-       coluna = self.dataset[column]
-       n = len(coluna)
+    
+        if column not in self.dataset:
+            return None
+        
+        coluna = self.dataset[column]
+        tamanho_coluna = len(coluna)
+        
+        if tamanho_coluna == 0:
+            return 0
 
-       #validacao
-       if not isinstance(coluna[0], (int, float)):
-           raise TypeError("Variação so funciona com numeros")
-       
-       media = self.mean(column)
-       soma = 0
+        if not isinstance(coluna[0], (int, float)):
+            raise TypeError("Variância só funciona com numeros")
+        
+        media = self.mean(column)
+        soma_diferencas_quadradas = 0
 
-       for valor in coluna:
-           soma += (valor - media) ** 2
+        for valor in coluna:
+            soma_diferencas_quadradas += (valor - media) ** 2
 
-       variancia = soma / n
-       return variancia
+        variancia = soma_diferencas_quadradas / tamanho_coluna
+        return variancia
 
     def stdev(self, column):
-         variancia = self.variance(column)
-         return variancia ** 0.5
+        variancia = self.variance(column)
+        
+        if variancia is None:
+            return None
+        
+        desvio_padrao = round(variancia ** 0.5, 2)
+        return desvio_padrao
 
     def covariance(self, column_a, column_b):
-      coluna_a = self.dataset[column_a]
-      coluna_b = self.dataset[column_b]
+        if column_a not in self.dataset or column_b not in self.dataset:
+            return None
+        
+        coluna_a = self.dataset[column_a]
+        coluna_b = self.dataset[column_b]
+        
+        tamanho_a = len(coluna_a)
+        tamanho_b = len(coluna_b)
+        
+        if tamanho_a != tamanho_b:
+            raise ValueError("As colunas devem ter o mesmo tamanho.")
+        
+        if tamanho_a == 0:
+            return 0
 
-      #validação
-      if len(column_a) != len(column_b):
-          raise TypeError("As colunas devem ter o mesmo tamanho")
-      if not isinstance(coluna_a[0], (int, float)) or not isinstance(coluna_b[0], (int, float)):
-          raise TypeError("Variação so funciona com numeros")
-      
-      media_a = self.mean(column_a)
-      media_b = self.mean(column_b)
+        if not isinstance(coluna_a[0], (int, float)) or not isinstance(coluna_b[0], (int, float)):
+            raise TypeError("A covariância só funciona com números.")
+        
+        media_a = self.mean(column_a)
+        media_b = self.mean(column_b)
 
-      soma = 0
+        soma_produtos_desvios = 0
 
-      for i in range(len(coluna_a)):
-          soma += (coluna_a[i] - media_a) * (coluna_b[i] - media_b)
+        for i in range(tamanho_a):
+            soma_produtos_desvios += (coluna_a[i] - media_a) * (coluna_b[i] - media_b)
 
-      return soma / len(coluna_a)
+        covariancia = soma_produtos_desvios / tamanho_a
+        return covariancia
+
 
     def itemset(self, column):
-        """
-        Retorna o conjunto de itens únicos em uma coluna.
-
-        Parâmetros
-        ----------
-        column : str
-            O nome da coluna (chave do dicionário do dataset).
-
-        Retorno
-        -------
-        set
-            Um conjunto com os valores únicos da coluna.
-        """
-        pass
+        if column not in self.dataset:
+            raise ValueError(f"Coluna '{column}' não encontrada.")
+        
+        return set(self.dataset[column])
 
     def absolute_frequency(self, column):
-        column = self.dataset[column]
+        if column not in self.dataset:
+            return {}
+        
+        data_column = self.dataset[column]
         frequency = {}
 
-        for value in column:
+        for value in data_column:
             if value in frequency:
                 frequency[value] += 1
             else:
@@ -192,6 +210,9 @@ class Statistics:
 
         for key in relative_frequency:
             total = total + int(relative_frequency[key])
+            
+        if total == 0:
+            return {}
 
         for key in relative_frequency:
             relative_frequency[key] = int(relative_frequency[key]) / total
@@ -201,183 +222,134 @@ class Statistics:
 
     def cumulative_frequency(self, column, frequency_method='absolute'):
         if frequency_method.lower().strip() not in ['absolute', 'relative']:
-            return 'Frequência Inválida'
-    
-        item_anterior = 0
-        
-        if frequency_method == 'absolute':
+            raise ValueError("O método deve ser 'absolute' ou 'relative'.")
+            
+        if frequency_method.lower().strip() == 'absolute':
             base_frequency = self.absolute_frequency(column)
         else:
             base_frequency = self.relative_frequency(column)
 
-        base_frequency_sorted = ["baixa", "media", "alta"] if "baixa" in base_frequency and "media" in base_frequency else sorted(base_frequency.keys())
+        base_frequency_sorted = self.ordinal_scales.get(column, sorted(base_frequency.keys()))
 
         cumulative_frequency = {}
+        item_anterior = 0
 
         for key in base_frequency_sorted:
             if key in base_frequency:
                 valor_atual = base_frequency[key] + item_anterior
-                cumulative_frequency[key] = valor_atual
+                cumulative_frequency[key] = round(valor_atual, 4) if isinstance(valor_atual, float) else valor_atual
                 item_anterior = valor_atual
         
         return cumulative_frequency
 
-
     def conditional_probability(self, column, value1, value2):
-        column = self.dataset[column]
-        conditional_probability = 0
-        total = 0
-        conditione = 0
-        for i in range(0, len(column) - 1):
-            if column[i] == value2:
-                total += 1
-                if column[i+1] == value1:
-                    conditione += 1
+        if column not in self.dataset:
+            return None
+            
+        dados = self.dataset[column]
+        tamanho = len(dados)
         
-        if total != 0:
-            conditional_probability = conditione / total
-        else:
+        if tamanho < 2:
             return 0
 
-        return conditional_probability
+        total_condicoes = 0
+        sucesso_sequencia = 0
+
+        for i in range(tamanho - 1):
+            
+            if dados[i] == value2:
+                total_condicoes += 1
+                
+                if dados[i + 1] == value1:
+                    sucesso_sequencia += 1
+
+        if total_condicoes == 0:
+            return 0
+
+        probabilidade = sucesso_sequencia / total_condicoes
+        return probabilidade
 
     def quartiles(self, column):
-        """
-        Calcula os quartis (Q1, Q2 e Q3) de uma coluna.
+        if column not in self.dataset:
+            return None
+        
+        valores_coluna = sorted(self.dataset[column])
+        tamanho_coluna = len(valores_coluna)
 
-        Parâmetros
-        ----------
-        column : str
-            O nome da coluna (chave do dicionário do dataset).
-
-        Retorno
-        -------
-        dict
-            Um dicionário com os quartis Q1, Q2 (mediana) e Q3.
-        """
-
-        # Recebendo os valores do dataset
-        valores = sorted(self.dataset[column])
-        print(valores)
-        tamanho_valores = len(valores)
-        print(tamanho_valores)
-
-        # Caso a quantidade de valores for igual a zero
-        if tamanho_valores == 0:
+        if tamanho_coluna == 0:
             return {"Q1": 0, "Q2": 0, "Q3": 0}
 
-        # Cálculo do Q2 (Mediana)
-        mediana = tamanho_valores // 2
-        if tamanho_valores % 2 == 0:
-            q2 = (valores[mediana - 1] + valores[mediana]) / 2
-            print(valores[mediana])
-            print(mediana)
-            print(q2)
-            # O fatiamento começa do início até o meio
-            primeira_metade = valores[:mediana]
-            # O fatiamento começa do meio até o final
-            segunda_metade  = valores[mediana:]
-        else:
-            q2 = valores[mediana]
-            # Para n ímpar, a mediana (Q2) é excluída de ambas as metades
-            primeira_metade = valores[:mediana]
-            segunda_metade  = valores[mediana + 1:]
+        if not isinstance(valores_coluna[0], (int, float)):
+            raise TypeError("Os quartis só podem ser calculados com dados numéricos.")
 
-        # Cálculo do Q1 (Mediana da Metade Inferior)
-        tamanho_inferior = len(primeira_metade)
-        mediana_1 = tamanho_inferior // 2
-        if tamanho_inferior % 2 == 0:
-            q1 = (primeira_metade[mediana_1 - 1] + primeira_metade[mediana_1]) / 2
-        else:
-            q1 = (primeira_metade[mediana_1])
+        def calcular_percentil(percentil):
+            posicao = (tamanho_coluna + 1) * percentil
+            
+            indice_flutuante = posicao - 1
+            
+            index_inteiro = int(indice_flutuante)
+            fracao = indice_flutuante - index_inteiro
 
-        # Cálculo do Q3 (Mediana da Metade Superior
-        tamanho_superior = len(segunda_metade)
-        mediana_2 = tamanho_superior // 2
-        if tamanho_superior % 2 == 0:
-            q3 = (segunda_metade [mediana_2 - 1] + segunda_metade [mediana_2]) / 2
-        else:
-            q3 = (segunda_metade [mediana_2])
+            if index_inteiro < 0:
+                return valores_coluna[0]
+            if index_inteiro >= tamanho_coluna - 1:
+                return valores_coluna[-1]
+
+            valor_base = valores_coluna[index_inteiro]
+            proximo_valor = valores_coluna[index_inteiro + 1]
+            
+            return valor_base + fracao * (proximo_valor - valor_base)
+
+        q1 = calcular_percentil(0.25)
+        q2 = calcular_percentil(0.50)
+        q3 = calcular_percentil(0.75)
 
         return {"Q1": q1, "Q2": q2, "Q3": q3}
     
      
     def histogram(self, column, bins): 
-        """
-        Gera um histograma baseado em buckets (intervalos).
 
-        Parâmetros
-        ----------
-        column : str
-            O nome da coluna (chave do dicionário do dataset).
-        bins : int
-            Número de buckets (intervalos).
-
-        Retorno
-        -------
-        dict
-            Um dicionário onde as chaves são os intervalos (tuplas)
-            e os valores são as contagens.
-        """
-
-        # Validação da coluna
         if column not in self.dataset:
             raise ValueError(f"Coluna '{column}' não encontrada no dataset.")
 
-        valores = self.dataset[column]
-        print(valores)
-        # Validação de bins
+        valores_coluna = self.dataset[column]
+        
+        if not valores_coluna:
+            return {}
+        
+        if not isinstance(valores_coluna[0], (int, float)):
+            return "Valor Não Numérico."
+        
         if bins <= 0:
             raise ValueError("O número de bins deve ser maior que zero.")
 
-        menor_valor = min(valores)
-        maior_valor = max(valores)
-        print(bins)
-        print(menor_valor)
-        print(maior_valor)
+        menor_valor = min(valores_coluna)
+        maior_valor = max(valores_coluna)
 
-        # Caso todos os valores sejam iguais
         if menor_valor == maior_valor:
-            return { f"Se os valores forem iguais: ({menor_valor}, {maior_valor})": len(valores)}
+            return { f"Se os valores forem iguais: ({menor_valor}, {maior_valor})": len(valores_coluna)}
 
 
         tamanho_bin = (maior_valor - menor_valor) / bins
-        print(f"tamanho bin: {tamanho_bin}")
-        # Criando os limites
+
         limites = []
         for i in range(bins + 1):
-            print(i)
             ponto = menor_valor + (i * tamanho_bin)
             limites.append(ponto)
-            print(limites)
 
-        # Criando estrutura do histograma
         histograma = {}
         for i in range(bins):
             intervalo = (limites[i], limites[i + 1])
-            print(limites[i])
-            print(limites[i + 1])
-            print(intervalo)
             histograma[intervalo] = 0
 
-        # Contagem dos valores
-        for valor in valores:
-            """ print(valor) """
+        for valor in valores_coluna:
             indice = int((valor - menor_valor) / tamanho_bin)
             
-            """ 50,30,70,20,80,30,25,75,20,65 """
-            # Ajuste para incluir o valor máximo no último intervalo
             if indice == bins:
                 indice -= 1
 
             intervalo = (limites[indice], limites[indice + 1])
-            print(f'intervalo v2{intervalo}')
             histograma[intervalo] += 1
-            print(f'histograma v2: {histograma}')
 
         return histograma
     pass
-
-
-
-
