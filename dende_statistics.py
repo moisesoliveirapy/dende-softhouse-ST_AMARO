@@ -1,88 +1,83 @@
 class Statistics:
-    """
-    Uma classe para realizar cálculos estatísticos em um conjunto de dados.
-
-    Atributos
-    ----------
-    dataset : dict[str, list]
-        O conjunto de dados, estruturado como um dicionário onde as chaves
-        são os nomes das colunas e os valores são listas com os dados.
-    """
     def __init__(self, dataset):
-        """
-        Inicializa o objeto Statistics.
+        if not isinstance(dataset, dict):
+            raise TypeError("O dataset deve ser um dicionário.")
+        
+        self.dataset = dataset 
+        
+        colunas = list(self.dataset.keys())
 
-        Parâmetros
-        ----------
-        dataset : dict[str, list]
-            O conjunto de dados, onde as chaves representam os nomes das
-            colunas e os valores são as listas de dados correspondentes.
-        """
-        self.dataset = dataset
+        if not colunas:
+            return
+        
+        primeira_chave = colunas[0]
+        if not isinstance(self.dataset[primeira_chave], list):
+            raise ValueError(f"A coluna '{primeira_chave}' deve conter uma lista.")
+
+        tamanho_esperado = len(self.dataset[primeira_chave])
+
+        for rotulo in colunas:
+            lista_dados = self.dataset[rotulo]
+
+            if not isinstance(lista_dados, list):
+                raise ValueError(f"A entrada '{rotulo}' não é uma lista válida.")
+
+            if len(lista_dados) != tamanho_esperado:
+                raise ValueError(f"Inconsistência: A coluna '{rotulo}' tem tamanho diferente.")
+
+            if tamanho_esperado > 0:
+                tipo_da_coluna = type(lista_dados[0])
+                for elemento in lista_dados:
+                    if type(elemento) is not tipo_da_coluna:
+                        raise ValueError(f"Tipo misto na coluna '{rotulo}'.")
         
         
     def mean(self, column):
-        """
-        Calcula a média aritmética de uma coluna.
-        """
         if column not in self.dataset:
-            raise ValueError(f"Coluna '{column}' não encontrada no dataset.")
+            return None
+        
+        dados = self.dataset[column]
+        
+        quantidade = len(dados)
+        if quantidade == 0:
+            return 0
 
-        valores = self.dataset[column]
+        if not isinstance(dados[0], (int, float)):
+            return None
 
-        if len(valores) == 0:
-            raise ValueError(f"Coluna '{column}' está vazia.")
-
-        for v in valores:
-            if not isinstance(v, (int, float)):
-                raise TypeError("Média só funciona com valores numéricos (int ou float).")
-
-        soma = 0
-        for v in valores:
-            soma += v
-
-        return soma / len(valores)
+        soma_total = 0
+        for valor in dados:
+            soma_total += valor
+        
+        if quantidade == 0:
+            return 0
+        
+        mean = soma_total / quantidade
+        return mean
 
 
 
 
     def median(self, column):
-        """
-        Calcula a mediana de uma coluna.
-        """
-        # validação: coluna existe
         if column not in self.dataset:
-            raise ValueError(f"Coluna '{column}' não encontrada no dataset.")
+            return None
+        
+        dados = self.dataset[column]
+        
+        column_size = len(dados)
+        if column_size == 0:
+            return None
 
-        valores = self.dataset[column]
+        if not isinstance(dados[0], (int, float)):
+            return None 
 
-        # validação: coluna não vazia
-        if len(valores) == 0:
-            raise ValueError(f"Coluna '{column}' está vazia.")
+        sorted_column = sorted(dados)
+        middle_position = column_size // 2
 
-        # validação: somente números
-        for v in valores:
-            if not isinstance(v, (int, float)):
-                raise TypeError("Mediana só funciona com valores numéricos (int ou float).")
+        if column_size % 2 != 0:
+            return sorted_column[middle_position]
 
-        # ordena uma cópia para não alterar o dataset original
-        ordenados = list(valores)
-
-        # ordenação (bubble sort simples; sem usar sorted())
-        n = len(ordenados)
-        for i in range(n):
-            for j in range(0, n - i - 1):
-                if ordenados[j] > ordenados[j + 1]:
-                    ordenados[j], ordenados[j + 1] = ordenados[j + 1], ordenados[j]
-
-        meio = n // 2
-
-        # se n for ímpar, retorna o do meio
-        if n % 2 != 0:
-            return ordenados[meio]
-
-        # se n for par, média dos dois centrais
-        return (ordenados[meio - 1] + ordenados[meio]) / 2
+        return (sorted_column[middle_position - 1] + sorted_column[middle_position]) / 2
 
     def mode(self, column):
         """
