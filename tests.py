@@ -44,6 +44,10 @@ class TestStatistics(unittest.TestCase):
 
     def test_median_participants(self):
         self.assertEqual(self.stats.median("participants"), 105.0)
+        
+    def test_median_priority(self):
+        self.assertEqual(self.stats.median("priority"), None)
+
 
     # ---------- Moda ----------
 
